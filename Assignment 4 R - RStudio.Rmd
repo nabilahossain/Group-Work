@@ -46,3 +46,16 @@ xlab("Percent College Educated") + ylab("Percentage of Total proverty")
 ```
 
 Answer: Based on the scatter plot above we see that...........
+
+```{r}
+A <- matrix(data=c(1,2,-3,2,1,-3,-1,2,0), nrow=3, ncol=3, byrow=TRUE)    
+
+B <- matrix(data=c(5,13,-8), nrow=3, ncol=1, byrow=FALSE)
+
+library(MASS)
+
+fractions(solve(A, B), 3) 
+
+
+```
+
