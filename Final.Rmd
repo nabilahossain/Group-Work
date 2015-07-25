@@ -1,0 +1,62 @@
+---
+title: "Final"
+author: "Nabila Hossain"
+date: "July 26, 2015"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+Using the `ggplot2` and `reshape2` packages
+```{r}
+library(ggplot2)
+library(reshape2)
+z <- data.frame("State" = midwest$state, "White_Population"= midwest$popwhite, "African_American_Population"= midwest$popblack, "Native_American_Population"= midwest$popamerindian, "Asian_American_Population"= midwest$popasian, "Population_Other_Races"=midwest$popother)
+
+m1 <- melt(z,id.vars="State", variable.name = "Race", value.name = "Population_by_Race" )
+head(m1)
+```
+
+```{r}
+midwest2 <- aggregate(Population_by_Race ~ (Race + State), data = m1, FUN = 'sum')
+midwest2
+```
+
+```{r}
+s <- ggplot(data = midwest2, aes(x = State, y = Population_by_Race, fill = Race))
+s + geom_histogram(stat="identity")+ ggtitle("Midwest States And Total Population By Race") +
+xlab("Midwest States") + ylab("Population by Race")
+
+s + geom_histogram(stat = "identity", position = "dodge") + ggtitle("Midwest States And Total Population By Each Race") +
+xlab("Midwest States") + ylab("Total Population By Each Race")
+
+ggplot(data = midwest2, aes(x = Race, y = Population_by_Race, fill = Race)) + geom_histogram(stat = "identity") + facet_wrap(~State) + ggtitle("Each Midwest State And The Total Population By Race") +
+xlab("Each Midwest State") + ylab("Total Population by Race")+ theme(axis.text.x  = element_text(angle=21, vjust=1.1, hjust = 0.9, size=7)) 
+```
+scale_x_discrete(breaks=c("White_Population", "African_American_Population", "Native_American_Population", "Asian_American_Population", "Population_Other_Races"), labels=c("Wh", "Af", "Na", "As", "Ot"))
+Using the `plyr` packages midwest's population by race
+```{r}
+library(plyr)
+midwest2s <- aggregate(Population_by_Race ~ (Race), data = midwest2, FUN = 'sum')
+midwest2s
+midwest2s <- ddply(midwest2s, .(Race), transform, pos=cumsum(Population_by_Race)-0.5*(Population_by_Race))
+ggplot(data = midwest2s, aes(x = "", y = Population_by_Race, fill = Race)) + geom_bar(stat = "identity", color = 'black') + coord_polar(theta="y") +  guides(fill=guide_legend(override.aes=list(colour=NA))) + ggtitle("The Total Population The Midwest By Race") +
+ylab("Total Population") 
+
+midwest.sub <- midwest[, c(3, 12:16)]
+names(midwest.sub) <- c("State", "White_Population", "African_American_Population", "Native_American_Population", "Asian_American_Population", "Population_Other_Races")
+m3 <- melt(midwest.sub,id.vars="State", variable.name = "Race", value.name = "Population_by_Race")
+
+
+midwest3 <- aggregate(Population_by_Race ~ ((Race + State)), data = m3, FUN = 'sum')
+midwest3 <- aggregate(Population_by_Race ~ ((Race + State)), data = m3, FUN = 'mean')
+midwest3
+midwest3 <- ddply(midwest3, .(State), transform, pos=cumsum(Population_by_Race)-0.5*(Population_by_Race));
+
+ggplot(data = midwest3, aes(x = "", y = Population_by_Race, fill = Race)) + geom_bar(stat = "identity", color = 'black') + coord_polar(theta="y")  + guides(fill=guide_legend(override.aes=list(colour=NA)))+
+facet_grid(facets = State~., scales = "free")
+
+ggplot(data = midwest3, aes(x = "", y = Population_by_Race, fill = Race)) + geom_bar(stat = "identity", color = 'black') + coord_polar(theta="y")  + guides(fill=guide_legend(override.aes=list(colour=NA)))+
+facet_wrap(~State)
+```
+
