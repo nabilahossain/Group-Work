@@ -91,7 +91,8 @@ midwest3 <- ddply(midwest3, .(State), transform, pos=cumsum(Population_by_Race)-
 
 
 ggplot(data = midwest3, aes(x = "", y = Population_by_Race, fill = Race)) + geom_bar(stat = "identity", color = 'black') + coord_polar(theta="y")  + guides(fill=guide_legend(override.aes=list(colour=NA)))+
-facet_wrap(~State)
+facet_wrap(~State) + ggtitle("The Population Of Midwest By Race") +
+ylab("Total Population By State") 
 ```
 
 
