@@ -7,7 +7,7 @@ output:
     keep_md: yes
 ---
 
-Using the `ggplot2` and `reshape2` packages
+Using the `ggplot2`, `plyr` and `reshape2` packages
 ```{r}
 library(ggplot2)
 library(reshape2)
@@ -15,14 +15,10 @@ z <- data.frame("State" = midwest$state, "White_Population"= midwest$popwhite, "
 
 m1 <- melt(z,id.vars="State", variable.name = "Race", value.name = "Population_by_Race" )
 head(m1)
-```
 
-```{r}
 midwest2 <- aggregate(Population_by_Race ~ (Race + State), data = m1, FUN = 'sum')
 midwest2
-```
 
-```{r}
 s <- ggplot(data = midwest2, aes(x = State, y = Population_by_Race, fill = Race))
 s + geom_histogram(stat="identity")+ ggtitle("Midwest States And Total Population By Race") +
 xlab("Midwest States") + ylab("Population by Race")
@@ -32,10 +28,7 @@ xlab("Midwest States") + ylab("Total Population By Each Race")
 
 ggplot(data = midwest2, aes(x = Race, y = Population_by_Race, fill = Race)) + geom_histogram(stat = "identity") + facet_wrap(~State) + ggtitle("Each Midwest State And The Total Population By Race") +
 xlab("Each Midwest State") + ylab("Total Population by Race")+ theme(axis.text.x  = element_text(angle=21, vjust=1.1, hjust = 0.9, size=7)) 
-```
-scale_x_discrete(breaks=c("White_Population", "African_American_Population", "Native_American_Population", "Asian_American_Population", "Population_Other_Races"), labels=c("Wh", "Af", "Na", "As", "Ot"))
-Using the `plyr` packages midwest's population by race
-```{r}
+
 library(plyr)
 midwest2s <- aggregate(Population_by_Race ~ (Race), data = midwest2, FUN = 'sum')
 midwest2s
