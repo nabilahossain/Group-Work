@@ -1,0 +1,102 @@
+---
+title: "FinalProject"
+author: "sanjive"
+date: "July 24, 2015"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+library(ggplot2)
+
+midwest <- read.csv(file="https://raw.githubusercontent.com/vincentarelbundock/Rdatasets/master/csv/ggplot2/midwest.csv", header=TRUE, sep=",") 
+
+library(sqldf)
+stateView<-sqldf(c("Drop table if exists state_View","CREATE table state_View
+  (state_id varchar(4), state_shortname varchar(3),state_longname varchar(15), countyName varchar(10));",
+  "Insert into state_View(state_shortname,countyName) Select state,county from midwest", 
+  "Update state_View set state_longname='ILLINOIS' where state_View.state_shortname='IL'",
+  "Update state_View set state_id='IL1' where state_View.state_shortname='IL'",
+
+  "Update state_View set state_longname='INDIANA' where state_View.state_shortname='IN'",
+  "Update state_View set state_id='IN2' where state_View.state_shortname='IN'",
+  
+  "Update state_View set state_longname='MICHIGAN' where state_View.state_shortname='MI'",
+  "Update state_View set state_id='MI3' where state_View.state_shortname='MI'",
+  
+  "Update state_View set state_longname='OHIO' where state_View.state_shortname='OH'",
+  "Update state_View set state_id='OH4' where state_View.state_shortname='OH'",
+  
+  "Update state_View set state_longname='WISCONSIN' where state_View.state_shortname='WI'",
+  "Update state_View set state_id='WI5' where state_View.state_shortname='WI'",
+  
+  "Select * from state_View"))
+#write.csv(stateView, file = "stateviewimportData.csv")
+head(stateView)
+
+midwest <- sqldf(c("Alter table midwest ADD state_idMW varchar(15)",
+ 
+  "Update midwest set state_idMW='ILLINOIS' where midwest.state='IL'",
+ "Update midwest set state_idMW='INDIANA' where midwest.state='IN'",
+ "Update midwest set state_idMW='MICHIGAN' where midwest.state='MI'",
+"Update midwest set state_idMW='OHIO' where midwest.state='OH'",
+"Update midwest set state_idMW='WISCONSIN' where midwest.state='WI'",
+  
+  "Select * from midwest"))
+
+#write.csv(midwest, file = "MidwestimportData1.csv")
+race_pop<- sqldf(c("select sum(popwhite),sum(popblack),sum(popamerindian), sum(popasian), sum(popother),state_idMW
+                   from midwest group by state_idMW"))
+
+print(race_pop)
+
+#,m.popblack,m.popamerindian,m.popasian,m.popother
+
+library(ggplot2)
+library(reshape2)
+race_pop2 <- race_pop
+names(race_pop2) <- c( "White_Population", "African_American_Population", "Native_American_Population", "Asian_American_Population", "Population_Other_Races", "State")
+m1 <- melt(race_pop2,id.vars="State", variable.name = "Race", value.name = "Population_by_Race" )
+head(m1)
+
+
+
+midwest2 <- aggregate(Population_by_Race ~ (Race + State), data = m1, FUN = 'sum')
+midwest2
+
+s <- ggplot(data = midwest2, aes(x = State, y = Population_by_Race, fill = Race))
+s + geom_histogram(stat = "identity", position = "dodge") + ggtitle("Midwest States And Total Population By Each Race") +
+xlab("Midwest States") + ylab("Total Population By Each Race")
+
+
+library(plyr)
+midwest2s <- aggregate(Population_by_Race ~ (Race), data = midwest2, FUN = 'sum')
+head(midwest2s)
+midwest2s <- ddply(midwest2s, .(Race), transform, pos=cumsum(Population_by_Race)-0.5*(Population_by_Race))
+ggplot(data = midwest2s, aes(x = "", y = Population_by_Race, fill = Race)) + geom_bar(stat = "identity", color = 'black') + coord_polar(theta="y") +  guides(fill=guide_legend(override.aes=list(colour=NA))) + ggtitle("The Total Population The Midwest By Race") +
+ylab("Total Population") 
+
+mid2 <- read.csv(file="https://raw.githubusercontent.com/vincentarelbundock/Rdatasets/master/csv/ggplot2/midwest.csv", header=TRUE, sep=",") 
+midwest.sub <- mid2[, c(4, 13:17)]
+head(midwest.sub)
+names(midwest.sub) <- c("State", "White_Population", "African_American_Population", "Native_American_Population", "Asian_American_Population", "Population_Other_Races")
+m3 <- melt(midwest.sub,id.vars="State", variable.name = "Race", value.name = "Population_by_Race")
+midwest3 <- aggregate(Population_by_Race ~ ((Race + State)), data = m3, FUN = 'sum')
+midwest3 <- aggregate(Population_by_Race ~ ((Race + State)), data = m3, FUN = 'mean')
+midwest3
+midwest3 <- ddply(midwest3, .(State), transform, pos=cumsum(Population_by_Race)-0.5*(Population_by_Race));
+
+
+ggplot(data = midwest3, aes(x = "", y = Population_by_Race, fill = Race)) + geom_bar(stat = "identity", color = 'black') + coord_polar(theta="y")  + guides(fill=guide_legend(override.aes=list(colour=NA)))+
+facet_wrap(~State)
+```
+
+
+
+
+
+
+
